@@ -1,102 +1,239 @@
-import Image from "next/image";
+import { Navigation } from "@/components/navigation";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="min-h-screen bg-gray-50">
+      <Navigation />
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      {/* Hero Section */}
+      <section className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+          <div className="text-center">
+            <h1 className="text-4xl md:text-6xl font-bold mb-6">
+              GarmentFlow
+            </h1>
+            <p className="text-xl md:text-2xl mb-8 text-blue-100">
+              Production Process Tracking System
+            </p>
+            <p className="text-lg mb-12 max-w-3xl mx-auto text-blue-50">
+              Digitize and track your entire garment production workflow from sales order to final delivery.
+              Gain real-time visibility, improve efficiency, and make data-driven decisions.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link href="/dashboard">
+                <Button size="lg" className="bg-white text-blue-600 hover:bg-gray-100">
+                  View Dashboard
+                </Button>
+              </Link>
+              <Link href="/sales-orders">
+                <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-blue-600">
+                  Create Sales Order
+                </Button>
+              </Link>
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Complete Production Workflow Management
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Streamline your garment production with our comprehensive tracking system
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  📋 Sales Order Management
+                </CardTitle>
+                <CardDescription>
+                  Create and manage customer orders with detailed specifications
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-sm text-gray-600">
+                  <li>• Customer information management</li>
+                  <li>• Product specifications tracking</li>
+                  <li>• Order status monitoring</li>
+                  <li>• Delivery date planning</li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  🏭 Production Tracking
+                </CardTitle>
+                <CardDescription>
+                  Monitor work orders through each production stage in real-time
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-sm text-gray-600">
+                  <li>• Stage-by-stage progress tracking</li>
+                  <li>• Real-time status updates</li>
+                  <li>• Production timeline monitoring</li>
+                  <li>• Bottleneck identification</li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  🔍 Quality Control
+                </CardTitle>
+                <CardDescription>
+                  Record and analyze quality inspection results
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-sm text-gray-600">
+                  <li>• Pass/Repair/Reject tracking</li>
+                  <li>• Quality metrics analysis</li>
+                  <li>• Inspection history logging</li>
+                  <li>• Performance reporting</li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  📊 Analytics & Reports
+                </CardTitle>
+                <CardDescription>
+                  Generate comprehensive production performance reports
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-sm text-gray-600">
+                  <li>• Production cycle time analysis</li>
+                  <li>• Quality performance metrics</li>
+                  <li>• On-time delivery tracking</li>
+                  <li>• CSV export capabilities</li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  👥 Role-Based Access
+                </CardTitle>
+                <CardDescription>
+                  Manage user permissions by department and role
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-sm text-gray-600">
+                  <li>• Sales, PPIC, Production roles</li>
+                  <li>• Warehouse and QC access</li>
+                  <li>• Management dashboards</li>
+                  <li>• Secure data management</li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  🚀 Real-Time Updates
+                </CardTitle>
+                <CardDescription>
+                  Live status updates and notifications
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-sm text-gray-600">
+                  <li>• Live order status tracking</li>
+                  <li>• Production stage updates</li>
+                  <li>• Instant notifications</li>
+                  <li>• Real-time analytics</li>
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Production Stages */}
+      <section className="py-16 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Production Workflow Stages
+            </h2>
+            <p className="text-lg text-gray-600">
+              Track every step of your garment production process
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+            {[
+              { stage: "PPIC", icon: "📝", color: "bg-blue-100 text-blue-800" },
+              { stage: "Material Prep", icon: "🧵", color: "bg-purple-100 text-purple-800" },
+              { stage: "Cutting", icon: "✂️", color: "bg-green-100 text-green-800" },
+              { stage: "Sewing", icon: "🧵", color: "bg-yellow-100 text-yellow-800" },
+              { stage: "Finishing", icon: "🎨", color: "bg-orange-100 text-orange-800" },
+              { stage: "QC", icon: "🔍", color: "bg-red-100 text-red-800" },
+              { stage: "Ready", icon: "📦", color: "bg-indigo-100 text-indigo-800" },
+              { stage: "Delivered", icon: "🚚", color: "bg-gray-100 text-gray-800" },
+            ].map((item, index) => (
+              <div key={item.stage} className="text-center">
+                <div className={`w-16 h-16 mx-auto mb-2 rounded-full flex items-center justify-center text-2xl ${item.color}`}>
+                  {item.icon}
+                </div>
+                <div className="text-sm font-medium text-gray-900">{item.stage}</div>
+                <div className="text-xs text-gray-500">Stage {index + 1}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-16 bg-gray-900 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl font-bold mb-4">
+            Ready to Transform Your Production Process?
+          </h2>
+          <p className="text-lg mb-8 text-gray-300">
+            Get started with GarmentFlow today and experience the power of digital production tracking.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/sales-orders">
+              <Button size="lg" className="bg-blue-600 hover:bg-blue-700">
+                Start Free Trial
+              </Button>
+            </Link>
+            <Link href="/dashboard">
+              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-gray-900">
+                View Demo
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-white border-t py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center text-gray-600">
+            <p>&copy; 2024 GarmentFlow. Production Process Tracking System.</p>
+          </div>
+        </div>
       </footer>
     </div>
   );
