@@ -1,8 +1,13 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { DashboardLayout } from "@/components/dashboard-layout";
 import { createClient } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { FileText, RefreshCw, Download, TrendingUp, Shield, Truck, Clock, CheckCircle, AlertTriangle } from "lucide-react";
 
 interface ProductionCycleTime {
   wo_id: number;
@@ -214,220 +219,296 @@ export default function ReportsPage() {
   };
 
   if (loading) {
-    return <div className="p-8 text-center">Loading reports...</div>;
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading reports...</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Reports</h1>
-              <p className="text-sm text-gray-600">Generate production performance reports</p>
+    <DashboardLayout>
+      <div className="flex min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-100/30">
+        <div className="flex-1 p-6 space-y-6">
+          {/* Header Section */}
+          <div className="flex justify-between items-start">
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                  <FileText className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900">Reports</h1>
+                  <p className="text-gray-600 text-sm">Generate production performance reports</p>
+                </div>
+              </div>
             </div>
-            <Button onClick={fetchReports}>
+            <Button onClick={fetchReports} className="h-10 bg-blue-600 hover:bg-blue-700 flex items-center gap-2">
+              <RefreshCw className="h-4 w-4" />
               Refresh Reports
             </Button>
           </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         {/* Production Cycle Time Report */}
-        <div className="bg-white shadow rounded-lg mb-6">
-          <div className="px-4 py-5 sm:p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg leading-6 font-medium text-gray-900">
-                Production Cycle Time Report
-              </h3>
-              <Button onClick={exportProductionCycleReport} size="sm">
-                Export CSV
-              </Button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h4 className="text-sm font-medium text-gray-900 mb-2">Average Cycle Time</h4>
-                <div className="text-2xl font-bold text-blue-600">
-                  {productionCycleTimes.length > 0
-                    ? `${(productionCycleTimes.reduce((sum, ct) => sum + ct.cycle_time_days, 0) / productionCycleTimes.length).toFixed(1)} days`
-                    : "N/A"}
-                </div>
+        <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">Production Cycle Time Report</h3>
+                <p className="text-sm text-gray-600">Analysis of production completion times</p>
               </div>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h4 className="text-sm font-medium text-gray-900 mb-2">Fastest Completion</h4>
-                <div className="text-2xl font-bold text-green-600">
-                  {productionCycleTimes.length > 0
-                    ? `${Math.min(...productionCycleTimes.map(ct => ct.cycle_time_days))} days`
-                    : "N/A"}
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                  <TrendingUp className="h-4 w-4 text-blue-600" />
                 </div>
-              </div>
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h4 className="text-sm font-medium text-gray-900 mb-2">Slowest Completion</h4>
-                <div className="text-2xl font-bold text-red-600">
-                  {productionCycleTimes.length > 0
-                    ? `${Math.max(...productionCycleTimes.map(ct => ct.cycle_time_days))} days`
-                    : "N/A"}
-                </div>
-              </div>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      WO Number
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Customer
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Start Date
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      End Date
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Cycle Time (Days)
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {productionCycleTimes.map((cycle) => (
-                    <tr key={cycle.wo_id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {cycle.wo_number}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {cycle.customer_name}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(cycle.start_date).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(cycle.end_date).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          cycle.cycle_time_days <= 7 ? "bg-green-100 text-green-800" :
-                          cycle.cycle_time_days <= 14 ? "bg-yellow-100 text-yellow-800" :
-                          "bg-red-100 text-red-800"
-                        }`}>
-                          {cycle.cycle_time_days} days
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        {/* Quality Performance Report */}
-        {qualityPerformance && (
-          <div className="bg-white shadow rounded-lg mb-6">
-            <div className="px-4 py-5 sm:p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg leading-6 font-medium text-gray-900">
-                  Quality Performance Report
-                </h3>
-                <Button onClick={exportQualityReport} size="sm">
+                <Button onClick={exportProductionCycleReport} size="sm" className="h-8 border-gray-200 hover:bg-gray-50 flex items-center gap-1">
+                  <Download className="h-3 w-3" />
                   Export CSV
                 </Button>
               </div>
+            </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <div className="bg-green-50 p-4 rounded-lg">
-                  <h4 className="text-sm font-medium text-gray-900 mb-2">Pass Rate</h4>
-                  <div className="text-2xl font-bold text-green-600">
-                    {qualityPerformance.pass_rate.toFixed(1)}%
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <Card className="border-0 shadow-sm bg-blue-50">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-medium text-gray-900">Average Cycle Time</h4>
+                    <Clock className="h-4 w-4 text-blue-600" />
                   </div>
-                  <div className="text-xs text-gray-600">
-                    {qualityPerformance.total_passed} / {qualityPerformance.total_inspected} units
-                  </div>
-                </div>
-                <div className="bg-yellow-50 p-4 rounded-lg">
-                  <h4 className="text-sm font-medium text-gray-900 mb-2">Repair Rate</h4>
-                  <div className="text-2xl font-bold text-yellow-600">
-                    {qualityPerformance.repair_rate.toFixed(1)}%
-                  </div>
-                  <div className="text-xs text-gray-600">
-                    {qualityPerformance.total_repaired} units
-                  </div>
-                </div>
-                <div className="bg-red-50 p-4 rounded-lg">
-                  <h4 className="text-sm font-medium text-gray-900 mb-2">Rejection Rate</h4>
-                  <div className="text-2xl font-bold text-red-600">
-                    {qualityPerformance.rejection_rate.toFixed(1)}%
-                  </div>
-                  <div className="text-xs text-gray-600">
-                    {qualityPerformance.total_rejected} units
-                  </div>
-                </div>
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h4 className="text-sm font-medium text-gray-900 mb-2">Total Inspected</h4>
                   <div className="text-2xl font-bold text-blue-600">
-                    {qualityPerformance.total_inspected}
+                    {productionCycleTimes.length > 0
+                      ? `${(productionCycleTimes.reduce((sum, ct) => sum + ct.cycle_time_days, 0) / productionCycleTimes.length).toFixed(1)} days`
+                      : "N/A"}
                   </div>
-                  <div className="text-xs text-gray-600">units</div>
+                </CardContent>
+              </Card>
+              <Card className="border-0 shadow-sm bg-green-50">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-medium text-gray-900">Fastest Completion</h4>
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                  </div>
+                  <div className="text-2xl font-bold text-green-600">
+                    {productionCycleTimes.length > 0
+                      ? `${Math.min(...productionCycleTimes.map(ct => ct.cycle_time_days))} days`
+                      : "N/A"}
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="border-0 shadow-sm bg-red-50">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-sm font-medium text-gray-900">Slowest Completion</h4>
+                    <AlertTriangle className="h-4 w-4 text-red-600" />
+                  </div>
+                  <div className="text-2xl font-bold text-red-600">
+                    {productionCycleTimes.length > 0
+                      ? `${Math.max(...productionCycleTimes.map(ct => ct.cycle_time_days))} days`
+                      : "N/A"}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="rounded-lg border border-gray-200 overflow-hidden">
+              <Table>
+                <TableHeader className="bg-gray-50">
+                  <TableRow>
+                    <TableHead className="text-gray-700">WO Number</TableHead>
+                    <TableHead className="text-gray-700">Customer</TableHead>
+                    <TableHead className="text-gray-700">Start Date</TableHead>
+                    <TableHead className="text-gray-700">End Date</TableHead>
+                    <TableHead className="text-gray-700">Cycle Time</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {productionCycleTimes.map((cycle) => (
+                    <TableRow key={cycle.wo_id} className="hover:bg-gray-50">
+                      <TableCell className="font-medium text-gray-900">{cycle.wo_number}</TableCell>
+                      <TableCell className="text-gray-700">{cycle.customer_name}</TableCell>
+                      <TableCell className="text-gray-700">{new Date(cycle.start_date).toLocaleDateString()}</TableCell>
+                      <TableCell className="text-gray-700">{new Date(cycle.end_date).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        <Badge variant={
+                          cycle.cycle_time_days <= 7 ? "default" :
+                          cycle.cycle_time_days <= 14 ? "secondary" : "destructive"
+                        } className={
+                          cycle.cycle_time_days <= 7 ? "bg-green-100 text-green-800 border-green-200" :
+                          cycle.cycle_time_days <= 14 ? "bg-yellow-100 text-yellow-800 border-yellow-200" :
+                          "bg-red-100 text-red-800 border-red-200"
+                        }>
+                          {cycle.cycle_time_days} days
+                        </Badge>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Quality Performance Report */}
+        {qualityPerformance && (
+          <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">Quality Performance Report</h3>
+                  <p className="text-sm text-gray-600">Quality control metrics and analysis</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="h-8 w-8 bg-green-100 rounded-lg flex items-center justify-center">
+                    <Shield className="h-4 w-4 text-green-600" />
+                  </div>
+                  <Button onClick={exportQualityReport} size="sm" className="h-8 border-gray-200 hover:bg-gray-50 flex items-center gap-1">
+                    <Download className="h-3 w-3" />
+                    Export CSV
+                  </Button>
                 </div>
               </div>
-            </div>
-          </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <Card className="border-0 shadow-sm bg-green-50">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-sm font-medium text-gray-900">Pass Rate</h4>
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                    </div>
+                    <div className="text-2xl font-bold text-green-600">
+                      {qualityPerformance.pass_rate.toFixed(1)}%
+                    </div>
+                    <div className="text-xs text-gray-600 mt-1">
+                      {qualityPerformance.total_passed} / {qualityPerformance.total_inspected} units
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="border-0 shadow-sm bg-yellow-50">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-sm font-medium text-gray-900">Repair Rate</h4>
+                      <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                    </div>
+                    <div className="text-2xl font-bold text-yellow-600">
+                      {qualityPerformance.repair_rate.toFixed(1)}%
+                    </div>
+                    <div className="text-xs text-gray-600 mt-1">
+                      {qualityPerformance.total_repaired} units
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="border-0 shadow-sm bg-red-50">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-sm font-medium text-gray-900">Rejection Rate</h4>
+                      <AlertTriangle className="h-4 w-4 text-red-600" />
+                    </div>
+                    <div className="text-2xl font-bold text-red-600">
+                      {qualityPerformance.rejection_rate.toFixed(1)}%
+                    </div>
+                    <div className="text-xs text-gray-600 mt-1">
+                      {qualityPerformance.total_rejected} units
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="border-0 shadow-sm bg-blue-50">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-sm font-medium text-gray-900">Total Inspected</h4>
+                      <Shield className="h-4 w-4 text-blue-600" />
+                    </div>
+                    <div className="text-2xl font-bold text-blue-600">
+                      {qualityPerformance.total_inspected}
+                    </div>
+                    <div className="text-xs text-gray-600 mt-1">units</div>
+                  </CardContent>
+                </Card>
+              </div>
+            </CardContent>
+          </Card>
         )}
 
         {/* Delivery Performance Report */}
         {deliveryPerformance && (
-          <div className="bg-white shadow rounded-lg mb-6">
-            <div className="px-4 py-5 sm:p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg leading-6 font-medium text-gray-900">
-                  On-Time Delivery Report
-                </h3>
-                <Button onClick={exportDeliveryReport} size="sm">
-                  Export CSV
-                </Button>
+          <Card className="border-0 shadow-lg bg-white/80 backdrop-blur-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">On-Time Delivery Report</h3>
+                  <p className="text-sm text-gray-600">Delivery performance and timeliness analysis</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="h-8 w-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <Truck className="h-4 w-4 text-purple-600" />
+                  </div>
+                  <Button onClick={exportDeliveryReport} size="sm" className="h-8 border-gray-200 hover:bg-gray-50 flex items-center gap-1">
+                    <Download className="h-3 w-3" />
+                    Export CSV
+                  </Button>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <div className="bg-green-50 p-4 rounded-lg">
-                  <h4 className="text-sm font-medium text-gray-900 mb-2">On-Time Rate</h4>
-                  <div className="text-2xl font-bold text-green-600">
-                    {deliveryPerformance.on_time_rate.toFixed(1)}%
-                  </div>
-                  <div className="text-xs text-gray-600">
-                    {deliveryPerformance.on_time_deliveries} / {deliveryPerformance.total_orders} orders
-                  </div>
-                </div>
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h4 className="text-sm font-medium text-gray-900 mb-2">On-Time Deliveries</h4>
-                  <div className="text-2xl font-bold text-blue-600">
-                    {deliveryPerformance.on_time_deliveries}
-                  </div>
-                  <div className="text-xs text-gray-600">orders</div>
-                </div>
-                <div className="bg-red-50 p-4 rounded-lg">
-                  <h4 className="text-sm font-medium text-gray-900 mb-2">Delayed Deliveries</h4>
-                  <div className="text-2xl font-bold text-red-600">
-                    {deliveryPerformance.delayed_deliveries}
-                  </div>
-                  <div className="text-xs text-gray-600">orders</div>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h4 className="text-sm font-medium text-gray-900 mb-2">Total Orders</h4>
-                  <div className="text-2xl font-bold text-gray-600">
-                    {deliveryPerformance.total_orders}
-                  </div>
-                  <div className="text-xs text-gray-600">orders</div>
-                </div>
+                <Card className="border-0 shadow-sm bg-green-50">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-sm font-medium text-gray-900">On-Time Rate</h4>
+                      <CheckCircle className="h-4 w-4 text-green-600" />
+                    </div>
+                    <div className="text-2xl font-bold text-green-600">
+                      {deliveryPerformance.on_time_rate.toFixed(1)}%
+                    </div>
+                    <div className="text-xs text-gray-600 mt-1">
+                      {deliveryPerformance.on_time_deliveries} / {deliveryPerformance.total_orders} orders
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="border-0 shadow-sm bg-blue-50">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-sm font-medium text-gray-900">On-Time Deliveries</h4>
+                      <Truck className="h-4 w-4 text-blue-600" />
+                    </div>
+                    <div className="text-2xl font-bold text-blue-600">
+                      {deliveryPerformance.on_time_deliveries}
+                    </div>
+                    <div className="text-xs text-gray-600 mt-1">orders</div>
+                  </CardContent>
+                </Card>
+                <Card className="border-0 shadow-sm bg-red-50">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-sm font-medium text-gray-900">Delayed Deliveries</h4>
+                      <AlertTriangle className="h-4 w-4 text-red-600" />
+                    </div>
+                    <div className="text-2xl font-bold text-red-600">
+                      {deliveryPerformance.delayed_deliveries}
+                    </div>
+                    <div className="text-xs text-gray-600 mt-1">orders</div>
+                  </CardContent>
+                </Card>
+                <Card className="border-0 shadow-sm bg-gray-50">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="text-sm font-medium text-gray-900">Total Orders</h4>
+                      <FileText className="h-4 w-4 text-gray-600" />
+                    </div>
+                    <div className="text-2xl font-bold text-gray-600">
+                      {deliveryPerformance.total_orders}
+                    </div>
+                    <div className="text-xs text-gray-600 mt-1">orders</div>
+                  </CardContent>
+                </Card>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         )}
+        </div>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }

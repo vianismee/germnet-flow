@@ -1,13 +1,16 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Navigation } from "@/components/navigation";
+import { DashboardLayout } from "@/components/dashboard-layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DateInput } from "@/components/ui/date-input";
+import { addDays } from "date-fns";
 import { createClient } from "@/utils/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -50,11 +53,34 @@ export default function SalesOrdersPage() {
 
   const [formData, setFormData] = useState({
     customer_id: "",
-    order_date: new Date().toISOString().split('T')[0],
-    target_delivery_date: "",
+    order_date: new Date(),
+    target_delivery_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     status: "Draft",
     items: [{ product_name: "", quantity: "", size: "", color: "" }]
   });
+
+  
+  // Date validation functions
+  const isValidOrderDate = (date: Date) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const maxOrderDate = addDays(today, 7); // Allow orders up to 7 days in the future for planning
+    const minOrderDate = new Date("2020-01-01");
+    return date >= minOrderDate && date <= maxOrderDate;
+  };
+
+  const isValidDeliveryDate = (date: Date) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const minDeliveryDate = addDays(today, 1); // At least tomorrow
+    const maxDeliveryDate = addDays(today, 365); // Up to 1 year in the future
+
+    // Also ensure delivery date is after order date
+    const orderDate = formData.order_date;
+    const minDeliveryFromOrder = orderDate ? addDays(orderDate, 1) : minDeliveryDate;
+
+    return date >= (minDeliveryFromOrder > minDeliveryDate ? minDeliveryFromOrder : minDeliveryDate) && date <= maxDeliveryDate;
+  };
 
   const fetchData = useCallback(async () => {
     const [ordersRes, customersRes] = await Promise.all([
@@ -85,14 +111,25 @@ export default function SalesOrdersPage() {
     e.preventDefault();
 
     try {
+      // Convert Date objects to ISO strings for database
+      const submitData = {
+        ...formData,
+        order_date: formData.order_date instanceof Date
+          ? formData.order_date.toISOString().split('T')[0]
+          : formData.order_date,
+        target_delivery_date: formData.target_delivery_date instanceof Date
+          ? formData.target_delivery_date.toISOString().split('T')[0]
+          : formData.target_delivery_date
+      };
+
       if (editingOrder) {
         // Update existing order
         const { error } = await supabase
           .from("sales_orders")
           .update({
             customer_id: parseInt(formData.customer_id),
-            order_date: formData.order_date,
-            target_delivery_date: formData.target_delivery_date,
+            order_date: submitData.order_date,
+            target_delivery_date: submitData.target_delivery_date,
             status: formData.status
           })
           .eq("so_id", editingOrder.so_id);
@@ -104,16 +141,33 @@ export default function SalesOrdersPage() {
           description: "Order has been updated successfully.",
         });
       } else {
-        // Create new order
-        const soNumber = `SO-${new Date().getFullYear()}-${String(salesOrders.length + 1).padStart(3, '0')}`;
+        // Create new order - generate unique SO number
+        const currentYear = new Date().getFullYear();
+        const { data: maxOrder, error: maxError } = await supabase
+          .from("sales_orders")
+          .select("so_number")
+          .like("so_number", `SO-${currentYear}-%`)
+          .order("so_number", { ascending: false })
+          .limit(1)
+          .single();
+
+        let nextNumber = 1;
+        if (maxOrder?.so_number) {
+          const match = maxOrder.so_number.match(/SO-(\d{4})-(\d{3})$/);
+          if (match) {
+            nextNumber = parseInt(match[2]) + 1;
+          }
+        }
+
+        const soNumber = `SO-${currentYear}-${String(nextNumber).padStart(3, '0')}`;
 
         const { data: newOrder, error } = await supabase
           .from("sales_orders")
           .insert([{
             so_number: soNumber,
             customer_id: parseInt(formData.customer_id),
-            order_date: formData.order_date,
-            target_delivery_date: formData.target_delivery_date,
+            order_date: submitData.order_date,
+            target_delivery_date: submitData.target_delivery_date,
             status: formData.status
           }])
           .select()
@@ -154,8 +208,8 @@ export default function SalesOrdersPage() {
     setEditingOrder(order);
     setFormData({
       customer_id: order.customer_id.toString(),
-      order_date: order.order_date,
-      target_delivery_date: order.target_delivery_date,
+      order_date: new Date(order.order_date),
+      target_delivery_date: new Date(order.target_delivery_date),
       status: order.status,
       items: [{ product_name: "", quantity: "", size: "", color: "" }]
     });
@@ -215,8 +269,8 @@ export default function SalesOrdersPage() {
   const resetForm = () => {
     setFormData({
       customer_id: "",
-      order_date: new Date().toISOString().split('T')[0],
-      target_delivery_date: "",
+      order_date: new Date(),
+      target_delivery_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       status: "Draft",
       items: [{ product_name: "", quantity: "", size: "", color: "" }]
     });
@@ -239,20 +293,20 @@ export default function SalesOrdersPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <Navigation />
-        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-          <div className="text-center">Loading sales orders...</div>
+      <DashboardLayout>
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading sales orders...</p>
+          </div>
         </div>
-      </div>
+      </DashboardLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Navigation />
-
-      <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+    <DashboardLayout>
+      <div className="p-6">
         {/* Page Header */}
         <div className="mb-8 flex justify-between items-center">
           <div>
@@ -278,40 +332,60 @@ export default function SalesOrdersPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <Label htmlFor="customer">Customer *</Label>
-                    <select
-                      id="customer"
-                      required
-                      className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                      value={formData.customer_id}
-                      onChange={(e) => setFormData(prev => ({ ...prev, customer_id: e.target.value }))}
-                    >
-                      <option value="">Select a customer</option>
-                      {customers.map(customer => (
-                        <option key={customer.customer_id} value={customer.customer_id}>
-                          {customer.customer_name}
-                        </option>
-                      ))}
-                    </select>
+                    <Select value={formData.customer_id} onValueChange={(value) => setFormData(prev => ({ ...prev, customer_id: value }))}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a customer" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {customers.map(customer => (
+                          <SelectItem key={customer.customer_id} value={customer.customer_id.toString()}>
+                            {customer.customer_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <div>
+                  <div className="grid gap-2">
                     <Label htmlFor="order_date">Order Date *</Label>
-                    <Input
+                    <DateInput
                       id="order_date"
-                      type="date"
-                      required
                       value={formData.order_date}
-                      onChange={(e) => setFormData(prev => ({ ...prev, order_date: e.target.value }))}
+                      onChange={(date) => {
+                        if (date && isValidOrderDate(date)) {
+                          // Set default delivery date to 30 days after order date if not already set
+                          const defaultDeliveryDate = addDays(date, 30);
+                          setFormData(prev => ({
+                            ...prev,
+                            order_date: date,
+                            target_delivery_date: prev.target_delivery_date || defaultDeliveryDate
+                          }));
+                        }
+                      }}
+                      placeholder="Select order date"
+                      minDate={new Date("2020-01-01")}
+                      maxDate={addDays(new Date(), 7)}
                     />
+                    <p className="text-xs text-muted-foreground">
+                      Order date can be up to 7 days in the future
+                    </p>
                   </div>
-                  <div>
+                  <div className="grid gap-2">
                     <Label htmlFor="target_delivery_date">Target Delivery Date *</Label>
-                    <Input
+                    <DateInput
                       id="target_delivery_date"
-                      type="date"
-                      required
                       value={formData.target_delivery_date}
-                      onChange={(e) => setFormData(prev => ({ ...prev, target_delivery_date: e.target.value }))}
+                      onChange={(date) => {
+                        if (date && isValidDeliveryDate(date)) {
+                          setFormData(prev => ({ ...prev, target_delivery_date: date }));
+                        }
+                      }}
+                      placeholder="Select delivery date"
+                      minDate={formData.order_date ? addDays(formData.order_date, 1) : addDays(new Date(), 1)}
+                      maxDate={addDays(new Date(), 365)}
                     />
+                    <p className="text-xs text-muted-foreground">
+                      Delivery date must be at least tomorrow and within 1 year
+                    </p>
                   </div>
                 </div>
 
@@ -497,6 +571,6 @@ export default function SalesOrdersPage() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </DashboardLayout>
   );
 }
